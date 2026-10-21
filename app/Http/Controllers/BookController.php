@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Book;
+use App\Models\Author;
 
 class BookController extends Controller
 {
@@ -14,75 +15,43 @@ class BookController extends Controller
         return view("books.index", compact("books"));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
+    public function create(){
+        $authors= Author::all();
+        return view('books.create',compact('authors'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(Request $request)
     {
-        $book = new Book();
-        $book->name = $request->nombre;
-        $book->date = $request->fecha;
-        $book->price = $request->precio;
-        $book->edition = $request->edicion;
-        $book->save();
+        $book = Book::create($request->except(['_token', 'authors']));
+        if ($request->has('authors')) {
+            $book->authors()->attach($request->authors);
+        }
         return redirect()->route('books.index');
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function show($id)
     {
         //
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
+    public function edit(String $id)
     {
-        //
+        $book = Book::findOrFail($id);
+        $authors=Author::all();
+        return view('books.edit', compact('book','authors'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function update(Request $request, $id)
     {
-        //
+        $book = Book::findOrFail($id);
+        $book->update($request->all());
+        $book->authors()->sync($request->authors ??[]);
+        return redirect()->route('books.index');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
+    public function destroy(String $id)
     {
-        //
+        Book::destroy($id);
+        return redirect()->route('books.index');
     }
 }

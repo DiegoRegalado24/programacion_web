@@ -1,38 +1,53 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    <div>
-        <form action="{{route('books.store')}}" method="post">
-            @csrf
-            <input type="text" name="nombre" id="">
-            <input type="date" name="fecha" id="">
-            <input type="number" name="precio" id="">
-            <input type="text" name="edicion" id="">
-            <button type="submit">Guardar</button>
-        </form>
-    </div>
-    <table>
-        <thead>
-            <th>Nombre</th>
-            <th>Fecha</th>
-            <th>Edición</th>
-            <th>Precio</th>
-        </thead>
-        <tbody>
-            @foreach ($books as $book)
-            <tr>
-                <td>{{$book->name}}</td>
-                <td>{{$book->date}}</td>
-                <td>{{$book->edition}}</td>
-                <td>{{$book->price}}</td>
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
-</body>
-</html>
+@extends('layouts.app')
+
+@section('content')
+
+<h1>Libros</h1>
+
+<a href="{{route('books.create')}}" class="btn btn-primary mb-3">Nuevo Libro</a>
+
+<div>
+    @if($books->isEmpty())
+        <div class="alert alert-warning">No hay libros registrados.</div>
+    @else
+        <table class="table table-bordered table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Título</th>
+                    <th>Año</th>
+                    <th>Autores</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($books as $book)
+                    <tr>
+                        <td>{{$book->id}}</td>
+                        <td>{{$book->name}}</td>
+                        <td>{{$book->publication_year ?? '-'}}</td>
+                        <td>
+                            @if($book->authors->isEmpty())
+                                <span class="text-muted">Sin autores</span>
+                            @else
+                                @foreach($book->authors as $author)
+                                    <span class="badge bg-secondary">{{$author->name}}</span>
+                                @endforeach
+                            @endif
+                        </td>
+                        <td>
+                            <a href="{{route('books.edit',$book->id)}}" class="btn btn-warning btn-sm">Editar</a>
+                            <form action="{{route('books.destroy',$book->id)}}" method="post" style="display:inline;">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+                            </form>
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    @endif
+</div>
+
+@endsection
